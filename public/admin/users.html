@@ -51,6 +51,7 @@
                   <input id="avatar" type="file" >
                   <!-- 隐藏域 -->
                   <input type="hidden" id="img" name="avatar">
+                  <!-- 图片地址 -->
                   <img src="../assets/img/default.png" id="prev">
                   <i class="mask fa fa-upload"></i>
                 </label>
@@ -58,11 +59,11 @@
                         </div>
                         <div class="form-group">
                             <label>邮箱</label>
-                            <input name="email" class="form-control" type="email" placeholder="请输入邮箱">
+                            <input name="email" id="email" class="form-control" type="email" placeholder="请输入邮箱">
                         </div>
                         <div class="form-group">
                             <label>昵称</label>
-                            <input name="nickName" class="form-control" type="text" placeholder="请输入昵称">
+                            <input name="nickName" id="nickName" class="form-control" type="text" placeholder="请输入昵称">
                         </div>
                         <div class="form-group">
                             <label>密码</label>
@@ -70,22 +71,23 @@
                         </div>
                         <div class="form-group">
                             <div class="radio-inline">
-                                <label><input type="radio" name="status" value='0'>未激活</label>
+                                <label><input type="radio" name="status" id="wjh" value='0'>未激活</label>
                             </div>
                             <div class="radio-inline">
-                                <label><input type="radio" name="status" value="1" checked>激活</label>
+                                <label><input type="radio" name="status" id="jh" value="1" checked>激活</label>
                             </div>
                         </div>
                         <div class="form-group">
                             <div class="radio-inline">
-                                <label><input type="radio" name="role" value="admin">超级管理员</label>
+                                <label><input type="radio" name="role" id="admin" value="admin">超级管理员</label>
                             </div>
                             <div class="radio-inline">
-                                <label><input type="radio" name="role" value="normal" checked>普通用户</label>
+                                <label><input type="radio" name="role" id="normal" value="normal" checked>普通用户</label>
                             </div>
                         </div>
                         <div class="form-group">
                             <button class="btn btn-primary" type="button" id="addUser">添加</button>
+                            <button class="btn btn-primary" type="button" id="editUser" style="display:none">修改</button>
                         </div>
                     </form>
                 </div>
@@ -200,7 +202,7 @@
             <td>{{$value.nickName}}</td>
             <td>{{$value.status == '1'?'激活':'未激活'}}</td>
             <td>{{$value.role == 'admin'?'超级管理员':'普通用户'}}</td>
-            <td class="text-center">
+            <td class="text-center" data-id="{{$value._id}}">
                 <a href="javascript:;" class="btn btn-default btn-xs edit">编辑</a>
                 <a href="javascript:;" class="btn btn-danger btn-xs">删除</a>
             </td>
@@ -245,6 +247,7 @@
                 success: function(res) {
                     //把res给push到userArr这个数组中
                     userArr.push(res);
+
                     //重新渲染模板
                     render(userArr)
                 }
@@ -270,6 +273,81 @@
 
             })
 
+        })
+
+        //完成点击编辑功能
+        var id;
+        $("tbody").on("click", '.edit', function() {
+            id = $(this).parent().attr('data-id'); //获取到父元素身上的id
+            $('form>h2').text('修改用户') //form表单下的h2标签的内容修改 
+
+            var trObj = $(this).parents('tr'); //查找到父元素tr标签
+            $("#email").val(trObj.children().eq(2).text())
+            $("#nickName").val(trObj.children().eq(3).text())
+            var status = trObj.children().eq(4).text()
+
+            var role = trObj.children().eq(5).text()
+
+            var imgSrc = trObj.children().eq(1).find('img').attr('src')
+            if (status == '激活') {
+                $("#jh").prop('checked', true) //prop 设置内置属性  attr 设置自定义属性
+            } else {
+                $("#wjh").prop('checked', true)
+            }
+
+            if (role == '超级管理员') {
+                $("#admin").prop('checked', true)
+            } else {
+                $("#normal").prop('checked', true)
+            }
+
+            if (imgSrc) {
+                $("#prev").attr('src', imgSrc); //图片链接
+                $("#img").val(imgSrc); //隐藏域
+            } else {
+                $("#prev").attr("src", '../assets/img/default.png'); //没有图片地址的话显示默认图片
+                $("#img").val(''); //隐藏域的内容置空
+            }
+
+            $("#addUser").hide(); //hide()隐藏元素
+            $("#editUser").show(); //show()显示元素
+        })
+
+        //给修改按钮注册点击事件
+        $("#editUser").on('click', function() {
+            //serialize 就是用于收集表单数据，只要表单里面的输入框的内容有name属性就能收集到
+            var formData = $('form').serialize()
+
+            $.ajax({
+                type: 'put',
+                url: '/users/' + id,
+                data: formData,
+                success: function(res) {
+                    //通过res对象里面的_id属性的值去数组中userArr这个数组将对应的元素找出来
+                    // console.log(res); res是当前点击的在数据库中的数据数组中的对象元素，具有_id属性
+                    // console.log(userArr);  数据库中的数据数组
+                    //如果数组里面的元素的_id的值正好等于了res._id
+                    var index = userArr.findIndex(item => item._id == res._id)
+                        //将res这个对象赋值给userArr这个数组里面的这个下标的元素
+                    userArr[index] = res
+                        //重新渲染页面
+                    render(userArr)
+
+                    //将输入框的内容全部置空
+                    $("#addUser").show() //添加按钮显示
+                    $("#editUser").hide() //修改按钮隐藏
+                    $("form > h2").text('添加新用户'); //h2标题的文字修改为添加界面的文字
+                    $("#img").val(''); //隐藏域内的信息置空
+                    $("#prev").attr('src', '../assets/img/default.png'); //图片显示为默认图片
+                    $("#email").val(''); //邮箱输入框内容置空
+                    $("#nickName").val('') //昵称输入框内容置空
+                    $("#admin").prop('checked', false)
+                    $("#normal").prop('checked', true)
+                    $("#jh").prop('checked', true)
+                    $("#wjh").prop('checked', false)
+
+                }
+            })
         })
     </script>
 
