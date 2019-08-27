@@ -53,6 +53,7 @@
                         </div>
                         <div class="form-group">
                             <button class="btn btn-primary" type="button" id="cAdd">添加</button>
+                            <button class="btn btn-primary" type="button" id="cEdit" style="display:none">修改</button>
                         </div>
                     </form>
                 </div>
@@ -148,7 +149,6 @@
                     $("#title").val('')
                     $("#className").val('')
 
-
                 }
             })
         })
@@ -171,6 +171,40 @@
             })
             $('tbody').html(str)
         }
+
+
+        //完成编辑功能
+        var id
+        $('tbody').on('click', '.edit', function() {
+            id = $(this).parent().attr('data-id')
+            $("#title").val($(this).parents('tr').children().eq(1).text())
+            $("#className").val($(this).parents('tr').children().eq(2).text())
+            $('form > h2').text('修改分类')
+            $("#cAdd").hide()
+            $("#cEdit").show()
+        })
+
+        $("#cEdit").on('click', function() {
+            $.ajax({
+                type: 'put',
+                url: '/categories/' + id,
+                data: $('form').serialize(),
+                success: function(res) {
+                    var index = cArr.findIndex(item => item._id == res._id)
+                    cArr[index] = res
+                    render(cArr) //重新渲染页面
+                        //重新更换为添加分类页面
+                    $('form > h2').text('添加分类')
+                    $("#cAdd").show()
+                    $("#cEdit").hide()
+
+                    //清空表单中的数据
+                    $("#title").val('')
+                    $("#className").val('')
+
+                }
+            })
+        })
     </script>
     <script>
         NProgress.done()
