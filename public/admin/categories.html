@@ -205,6 +205,22 @@
                 }
             })
         })
+
+        //实现删除功能
+        $("tbody").on('click', '.delete', function() {
+            if (confirm('你真的需要删除吗')) {
+                var id = $(this).parent().attr('data-id')
+                $.ajax({
+                    type: 'delete',
+                    url: '/categories/' + id,
+                    success: function(res) {
+                        var index = cArr.findIndex(item => item._id == res._id)
+                        cArr.splice(index, 1)
+                        render(cArr)
+                    }
+                })
+            }
+        })
     </script>
     <script>
         NProgress.done()
