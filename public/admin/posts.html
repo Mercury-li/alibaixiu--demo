@@ -156,10 +156,10 @@
             <td>{{$value.title}}</td>
             <td>{{$value.author.nickName}}</td>
             <td>{{$value.category.title}}</td>
-            <td class="text-center">{{$value.category.createAt.substr(0,10)}}</td>
+            <td class="text-center">{{$value.createAt.substr(0,10)}}</td>
             <td class="text-center">{{$value.state == '1'?'已发布':'草稿'}}</td>
             <td class="text-center">
-                <a href="javascript:;" class="btn btn-default btn-xs edit">编辑</a>
+                <a href="post-add.html?id={{$value._id}}" class="btn btn-default btn-xs edit">编辑</a>
                 <a href="javascript:;" class="btn btn-danger btn-xs">删除</a>
             </td>
         </tr>
@@ -196,7 +196,7 @@
                     page: page
                 },
                 success: function(res) {
-                    // console.log(res); //是一个对象
+                    console.log(res); //是一个对象
                     var str = template('pTpl', res)
                     $('tbody').html(str)
 

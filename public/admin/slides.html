@@ -47,19 +47,21 @@
                         <div class="form-group">
                             <label for="image">图片</label>
                             <!-- show when image chose -->
-                            <img class="help-block thumbnail" style="display: none">
+                            <img class="help-block thumbnail" style="display: none" id="prev">
                             <input id="image" class="form-control" name="image" type="file">
+                            <!-- 隐藏域 -->
+                            <input type="hidden" id="img" name="image">
                         </div>
                         <div class="form-group">
                             <label for="text">文本</label>
-                            <input id="text" class="form-control" name="text" type="text" placeholder="文本">
+                            <input id="text" class="form-control" name="title" type="text" placeholder="文本">
                         </div>
                         <div class="form-group">
                             <label for="link">链接</label>
                             <input id="link" class="form-control" name="link" type="text" placeholder="链接">
                         </div>
                         <div class="form-group">
-                            <button class="btn btn-primary" type="submit">添加</button>
+                            <button class="btn btn-primary" type="button" id="lAdd">添加</button>
                         </div>
                     </form>
                 </div>
@@ -74,7 +76,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
+                            <!-- <tr>
                                 <td class="text-center"><img class="slide" src="../uploads/slide_1.jpg"></td>
                                 <td>XIU功能演示</td>
                                 <td>#</td>
@@ -89,7 +91,7 @@
                                 <td class="text-center">
                                     <a href="javascript:;" class="btn btn-danger btn-xs">删除</a>
                                 </td>
-                            </tr>
+                            </tr> -->
                         </tbody>
                     </table>
                 </div>
@@ -137,6 +139,93 @@
     <script src="../assets/vendors/jquery/jquery.js"></script>
     <script src="../assets/vendors/bootstrap/js/bootstrap.js"></script>
     <script src="../assets/js/common.js"></script>
+    <script src="../assets/vendors/art-template/template-web.js"></script>
+    <script type="text/html" id="sTpl">
+        {{each list}}
+        <tr>
+            <td class="text-center"><img class="slide" src="{{$value.image}}"></td>
+            <td>{{$value.title}}</td>
+            <td>{{$value.link}}</td>
+            <td class="text-center">
+                <a href="javascript:;" class="btn btn-danger btn-xs delete" data-id="{{$value._id}}">删除</a>
+            </td>
+        </tr>
+        {{/each}}
+    </script>
+
+    <script>
+        var sArr = []
+            //完成图片上传功能
+        $("#image").on('change', function() {
+            var formData = new FormData()
+            formData.append('image', this.files[0])
+            $.ajax({
+                url: '/upload',
+                type: 'post',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(res) {
+                    $("#prev").show().attr('src', res[0].image)
+                    $("#img").val(res[0].image)
+
+                }
+            })
+        })
+
+        //轮播图片上传
+        $("#lAdd").on('click', function() {
+            $.ajax({
+                url: '/slides',
+                type: 'post',
+                data: $('form').serialize(),
+                success: function(res) {
+                    sArr.push(res)
+                    render(sArr)
+                    $('#image').val('')
+                    $("#img").val('')
+                    $('#text').val('')
+                    $('#link').val('')
+                }
+            })
+        })
+
+        function render(arr) {
+            var html = template('sTpl', {
+                list: arr
+            })
+            $('tbody').html(html)
+        }
+
+        //向服务器获取数据
+        $.ajax({
+            url: '/slides',
+            type: 'get',
+            success: function(res) {
+                // console.log(res);
+                sArr = res
+                render(sArr)
+
+
+            }
+        })
+
+        //删除事件
+        $('tbody').on('click', '.delete', function() {
+            var id = $(this).attr('data-id') //获取到点击删除的数据的id属性
+                // console.log(id);
+            $.ajax({
+                url: '/slides/' + id,
+                type: 'delete',
+                success: function(res) {
+                    var index = sArr.findIndex(item => item._id == res._id)
+                    sArr.splice(index, 1)
+                    render(sArr)
+                }
+            })
+
+        })
+    </script>
     <script>
         NProgress.done()
     </script>
