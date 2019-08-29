@@ -156,11 +156,11 @@
             <td>{{$value.title}}</td>
             <td>{{$value.author.nickName}}</td>
             <td>{{$value.category.title}}</td>
-            <td class="text-center">{{$value.createAt.substr(0,10)}}</td>
+            <td class="text-center">{{$value.createAt && $value.createAt.substr(0,10)}}</td>
             <td class="text-center">{{$value.state == '1'?'已发布':'草稿'}}</td>
             <td class="text-center">
                 <a href="post-add.html?id={{$value._id}}" class="btn btn-default btn-xs edit">编辑</a>
-                <a href="javascript:;" class="btn btn-danger btn-xs">删除</a>
+                <a href="javascript:;" class="btn btn-danger btn-xs delete" data-id="{{$value._id}}">删除</a>
             </td>
         </tr>
         {{/each}}
@@ -196,7 +196,9 @@
                     page: page
                 },
                 success: function(res) {
-                    console.log(res); //是一个对象
+                    // console.log(res); //是一个对象
+                    //给window对象添加一个属性
+                    window.currentPage = res.page
                     var str = template('pTpl', res)
                     $('tbody').html(str)
 
@@ -244,6 +246,36 @@
             //     }
             // })
             render(c, s)
+        })
+
+        //删除文章功能
+        $('tbody').on('click', '.delete', function() {
+            if (confirm('你确定需要删除吗')) {
+                var id = $(this).attr('data-id')
+                    // console.log(id);
+                $.ajax({
+                    url: '/posts/' + id,
+                    type: 'delete',
+                    success: function(res) {
+                        // console.log(currentPage);获得当前页码
+
+                        //如果删除成功，则重新渲染页面
+
+                        //如果tbody下面只有一个tr标签，我们删除后需要调整到前一个，如果不是等于1，则停留在本页
+                        if ($('tbody').children().length == 1) {
+                            //如果当前页已经是第一页了，就让他在这一页
+                            if (currentPage == 1) {
+                                render(c, s, currentPage)
+                            } else {
+                                render(c, s, currentPage - 1)
+                            }
+                        } else {
+                            render(c, s, currentPage)
+                        }
+                    }
+                })
+
+            }
         })
     </script>
     <script>

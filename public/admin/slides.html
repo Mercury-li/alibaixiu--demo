@@ -183,6 +183,7 @@
                     sArr.push(res)
                     render(sArr)
                     $('#image').val('')
+                    $("#prev").hide()
                     $("#img").val('')
                     $('#text').val('')
                     $('#link').val('')
@@ -212,18 +213,20 @@
 
         //删除事件
         $('tbody').on('click', '.delete', function() {
-            var id = $(this).attr('data-id') //获取到点击删除的数据的id属性
-                // console.log(id);
-            $.ajax({
-                url: '/slides/' + id,
-                type: 'delete',
-                success: function(res) {
-                    var index = sArr.findIndex(item => item._id == res._id)
-                    sArr.splice(index, 1)
-                    render(sArr)
-                }
-            })
+            if (confirm('您确定要删除吗')) {
+                var id = $(this).attr('data-id') //获取到点击删除的数据的id属性
+                    // console.log(id);
+                $.ajax({
+                    url: '/slides/' + id,
+                    type: 'delete',
+                    success: function(res) {
+                        var index = sArr.findIndex(item => item._id == res._id)
+                        sArr.splice(index, 1)
+                        render(sArr)
+                    }
+                })
 
+            }
         })
     </script>
     <script>
