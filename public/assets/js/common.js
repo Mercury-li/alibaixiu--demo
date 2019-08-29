@@ -14,3 +14,14 @@ $("#logout").on('click', function() {
         })
     }
 })
+
+//向服务器发送请求，索要用户登录信息
+$.ajax({
+    url: '/users/' + userId,
+    type: 'get',
+    success: function(res) {
+        // console.log(res);
+        $('.avatar').attr('src', res.avatar)
+        $('.profile .name').html(res.nickName)
+    }
+})
