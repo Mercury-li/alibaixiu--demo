@@ -41,15 +41,15 @@
                 <!-- show when multiple checked -->
                 <a class="btn btn-danger btn-sm" href="javascript:;" style="display: none">批量删除</a>
                 <form class="form-inline">
-                    <select name="" class="form-control input-sm">
-            <option value="">所有分类</option>
+                    <select name="category" class="form-control input-sm" id="category">
+            <option value="all">所有分类</option>
           </select>
-                    <select name="" class="form-control input-sm">
-            <option value="">所有状态</option>
-            <option value="">草稿</option>
-            <option value="">已发布</option>
+                    <select name="state" class="form-control input-sm" id="state">
+            <option value="all">所有状态</option>
+            <option value="0">草稿</option>
+            <option value="1">已发布</option>
           </select>
-                    <button class="btn btn-default btn-sm">筛选</button>
+                    <button class="btn btn-default btn-sm" type="button" id="btnSearch">筛选</button>
                 </form>
                 <ul class="pagination pagination-sm pull-right">
                     <!-- <li><a href="javascript:;">上一页</a></li>
@@ -175,27 +175,25 @@
         < pages}} <li><a href="javascript:;" onclick="changePage({{page -0 +1}})">下一页</a></li>
             {{/if}}
     </script>
+
+    <script type="text/html" id="cTpl">
+        {{each list}}
+        <option value="{{$value._id}}">{{$value.title}}</option>
+        {{/each}}
+    </script>
     <script>
         //请求服务器，得到所有文章，并将其显示出来
-        $.ajax({
-            type: 'get',
-            url: '/posts',
-            success: function(res) {
-                // console.log(res); //是一个对象
-                var str = template('pTpl', res)
-                $('tbody').html(str)
+        var c = $("#category").val()
+        var s = $("#state").val()
 
-                var pageStr = template('pageTpl', res)
-                $(".pagination").html(pageStr)
-            }
-        })
-
-        function changePage(index) {
+        function render(category = 'all', state = 'all', page = 1) {
             $.ajax({
                 type: 'get',
                 url: '/posts',
                 data: {
-                    page: index
+                    category: category,
+                    state: state,
+                    page: page
                 },
                 success: function(res) {
                     // console.log(res); //是一个对象
@@ -207,6 +205,46 @@
                 }
             })
         }
+        render()
+
+        function changePage(index) {
+            render(c, s, index)
+        }
+
+        //将所有的分类展示到这个页面中
+        $.ajax({
+            type: 'get',
+            url: '/categories',
+            success: function(res) {
+                // console.log(res);
+                var str = template('cTpl', {
+                    list: res
+                })
+                $("#category").append(str)
+            }
+        })
+
+        $("#btnSearch").on('click', function() {
+            c = $("#category").val()
+            s = $("#state").val()
+                // $.ajax({
+                //     type: 'get',
+                //     url: '/posts',
+                //     data: {
+                //         state: s,
+                //         category: c
+                //     },
+                //     success: function(res) {
+                //         // console.log(res); //是一个对象
+                //         var str = template('pTpl', res)
+                //         $('tbody').html(str)
+
+            //         var pageStr = template('pageTpl', res)
+            //         $(".pagination").html(pageStr)
+            //     }
+            // })
+            render(c, s)
+        })
     </script>
     <script>
         NProgress.done()
