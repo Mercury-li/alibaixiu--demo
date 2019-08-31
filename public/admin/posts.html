@@ -229,17 +229,19 @@
         $("#btnSearch").on('click', function() {
             c = $("#category").val()
             s = $("#state").val()
-                // $.ajax({
-                //     type: 'get',
-                //     url: '/posts',
-                //     data: {
-                //         state: s,
-                //         category: c
-                //     },
-                //     success: function(res) {
-                //         // console.log(res); //是一个对象
-                //         var str = template('pTpl', res)
-                //         $('tbody').html(str)
+            console.log(c, s);
+
+            // $.ajax({
+            //     type: 'get',
+            //     url: '/posts',
+            //     data: {
+            //         state: s,
+            //         category: c
+            //     },
+            //     success: function(res) {
+            //         // console.log(res); //是一个对象
+            //         var str = template('pTpl', res)
+            //         $('tbody').html(str)
 
             //         var pageStr = template('pageTpl', res)
             //         $(".pagination").html(pageStr)
